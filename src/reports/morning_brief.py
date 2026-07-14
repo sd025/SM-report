@@ -71,7 +71,7 @@ def format_news(news: list) -> str:
     html = "<ul style='padding-left: 20px; font-size: 14px;'>"
     for item in news:
         src = item.get("source", "")
-        html += f"<li style='margin-bottom: 8px;'><a href='{item['link']}'>{item['title']}</a> <span class='muted'>({src})</span></li>"
+        html += f"<li style='margin-bottom: 8px;'><a href='{item.get(\"url\", \"\")}\'>{item.get(\"title\", \"\")}</a> <span class='muted'>({src})</span></li>"
     html += "</ul>"
     return html
 

@@ -5,8 +5,7 @@ Provides the "brutally honest" 17-year veteran analyst persona.
 
 import logging
 import os
-from google import genai
-from google.genai import types
+import google.generativeai as genai
 from config import GEMINI_MODEL
 
 logger = logging.getLogger(__name__)
@@ -25,9 +24,8 @@ Rules:
 
 
 class GeminiAnalyst:
-    """
-    Wrapper for the modern google-genai API loaded with the 17-year veteran persona.
-    """
+    """Wrapper for Gemini API loaded with the 17-year veteran persona."""
+
     def __init__(self):
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
@@ -35,16 +33,14 @@ class GeminiAnalyst:
             self.enabled = False
             return
 
-        self.client = genai.Client(api_key=api_key)
-        self.model_name = "gemini-1.5-flash"
-        self.config = types.GenerateContentConfig(
-            temperature=0.4,
+        genai.configure(api_key=api_key)
+        self.model = genai.GenerativeModel(
+            model_name="gemini-1.5-flash",
             system_instruction=SYSTEM_INSTRUCTION
         )
         self.enabled = True
 
     def get_market_summary(self, index_data: str, news_data: str, fii_dii: str = "") -> str:
-        """Generate a macro summary combining price action, liquidity, and global news."""
         if not self.enabled:
             return "AI narrative disabled (no API key)."
 
@@ -63,35 +59,25 @@ class GeminiAnalyst:
         What is the overall trend? Are institutions buying or selling? How do the global headlines affect Indian markets today? (Keep it to 4-5 sentences max).
         """
         try:
-            response = self.client.models.generate_content(
-                model=self.model_name,
-                contents=prompt,
-                config=self.config
-            )
+            response = self.model.generate_content(prompt)
             return response.text.strip()
         except Exception as exc:
             logger.error("Gemini macro summary failed: %s", exc)
             return f"Failed to generate market summary: {exc}"
 
     def get_analyst_desk_lesson(self, topic: str = "Volatility Contraction Pattern") -> str:
-        """Generates a quick 3-sentence educational lesson on a financial concept."""
         if not self.enabled:
             return ""
             
         prompt = f"Explain the trading concept of '{topic}' in 3 simple sentences for someone who is not in finance, but wants to understand how hedge funds use it to make money."
         try:
-            response = self.client.models.generate_content(
-                model=self.model_name,
-                contents=prompt,
-                config=self.config
-            )
+            response = self.model.generate_content(prompt)
             return response.text.strip()
         except Exception as exc:
             logger.error("Analyst lesson failed: %s", exc)
             return f"Failed to generate lesson: {exc}"
 
     def analyze_stock_group(self, group_name: str, stock_data: str) -> str:
-        """Analyze a list of gainers/losers or anomalies."""
         if not self.enabled:
             return "AI narrative disabled."
             
@@ -105,18 +91,13 @@ class GeminiAnalyst:
         Provide a 2-3 sentence analysis per stock. Be brutally honest.
         """
         try:
-            response = self.client.models.generate_content(
-                model=self.model_name,
-                contents=prompt,
-                config=self.config
-            )
+            response = self.model.generate_content(prompt)
             return response.text.strip()
         except Exception as exc:
             logger.error("Gemini stock analysis failed: %s", exc)
             return f"Failed to analyze stocks: {exc}"
 
     def build_watchlist(self, anomaly_data: str) -> str:
-        """Pick the top 3-4 most interesting setups from anomalies to watch tomorrow."""
         if not self.enabled:
             return "AI watchlist disabled."
             
@@ -139,4 +120,4 @@ class GeminiAnalyst:
             return response.text.strip()
         except Exception as exc:
             logger.error("Gemini watchlist failed: %s", exc)
-            return "Failed to build watchlist."
+            return f"Failed to build watchlist: {exc}"
