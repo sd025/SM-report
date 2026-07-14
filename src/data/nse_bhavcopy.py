@@ -86,6 +86,7 @@ def _parse_bhavcopy(zip_bytes: bytes) -> Optional[pd.DataFrame]:
 
     # Column name aliases (NSE UDiFF uses different names than the old format)
     aliases = {
+        # Old Format
         "TRAD_CONS_SYM":  "SYMBOL",
         "SYMBOL":         "SYMBOL",
         "ISIN_CODE":      "ISIN",
@@ -96,10 +97,20 @@ def _parse_bhavcopy(zip_bytes: bytes) -> Optional[pd.DataFrame]:
         "CLOSE_PRICE":    "CLOSE",
         "PREV_CL_PR":     "PREV_CLOSE",
         "PREV_CLOSE":     "PREV_CLOSE",
-        "TTL_TRD_QNTY":  "VOLUME",
-        "TOT_TRD_QTY":   "VOLUME",
+        "TTL_TRD_QNTY":   "VOLUME",
+        "TOT_TRD_QTY":    "VOLUME",
         "SERIES":         "SERIES",
         "MKT_CAP":        "MKT_CAP",
+        
+        # New UDiFF Format (NSE)
+        "TCKRSYMB":       "SYMBOL",
+        "SCTYSRS":        "SERIES",
+        "OPNPRIC":        "OPEN",
+        "HGHPRIC":        "HIGH",
+        "LWPRIC":         "LOW",
+        "CLSPRIC":        "CLOSE",
+        "PRVSCLSGPRIC":   "PREV_CLOSE",
+        "TOTTRDDQTY":     "VOLUME",
     }
     for old, new in aliases.items():
         if old in df.columns and new not in df.columns:
