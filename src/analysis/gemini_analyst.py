@@ -5,8 +5,8 @@ Provides the "brutally honest" 17-year veteran analyst persona.
 
 import logging
 import os
-from typing import List, Dict, Optional
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from config import GEMINI_MODEL
 
 logger = logging.getLogger(__name__)
@@ -25,18 +25,20 @@ Rules:
 
 
 class GeminiAnalyst:
-    """Wrapper for Gemini Flash to generate market commentary."""
-
+    """
+    Wrapper for the modern google-genai API loaded with the 17-year veteran persona.
+    """
     def __init__(self):
-        api_key = os.environ.get("GEMINI_API_KEY", "")
+        api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
-            logger.warning("GEMINI_API_KEY not set. Narrative generation will be disabled.")
+            logger.warning("GEMINI_API_KEY not found. AI narratives will be disabled.")
             self.enabled = False
             return
-            
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel(
-            model_name=GEMINI_MODEL,
+
+        self.client = genai.Client(api_key=api_key)
+        self.model_name = "gemini-2.5-flash"
+        self.config = types.GenerateContentConfig(
+            temperature=0.4,
             system_instruction=SYSTEM_INSTRUCTION
         )
         self.enabled = True
@@ -61,7 +63,11 @@ class GeminiAnalyst:
         What is the overall trend? Are institutions buying or selling? How do the global headlines affect Indian markets today? (Keep it to 4-5 sentences max).
         """
         try:
-            response = self.model.generate_content(prompt)
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config=self.config
+            )
             return response.text.strip()
         except Exception as exc:
             logger.error("Gemini macro summary failed: %s", exc)
@@ -74,8 +80,14 @@ class GeminiAnalyst:
             
         prompt = f"Explain the trading concept of '{topic}' in 3 simple sentences for someone who is not in finance, but wants to understand how hedge funds use it to make money."
         try:
-            return self.model.generate_content(prompt).text.strip()
-        except:
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config=self.config
+            )
+            return response.text.strip()
+        except Exception as exc:
+            logger.error("Analyst lesson failed: %s", exc)
             return ""
 
     def analyze_stock_group(self, group_name: str, stock_data: str) -> str:
@@ -87,15 +99,17 @@ class GeminiAnalyst:
             return "No notable stocks in this category."
 
         prompt = f"""
-        Review this list of {group_name}. Provide your brutally honest, 2-3 sentence take on EACH stock.
-        Format as a bulleted list:
-        * **[SYMBOL]**: [Your 2-3 sentence take]
-        
-        Data:
+        Analyze this group of stocks ({group_name}):
         {stock_data}
+        
+        Provide a 2-3 sentence analysis per stock. Be brutally honest.
         """
         try:
-            response = self.model.generate_content(prompt)
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config=self.config
+            )
             return response.text.strip()
         except Exception as exc:
             logger.error("Gemini stock analysis failed: %s", exc)

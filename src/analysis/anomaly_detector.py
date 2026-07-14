@@ -42,34 +42,43 @@ def extract_top_movers(
 def extract_momentum_breakouts(df: pd.DataFrame, n: int = 3) -> pd.DataFrame:
     """
     Finds Mid/Small cap stocks breaking out with huge institutional delivery.
-    Criteria: Delivery > 65%, Price > +2%.
+    Criteria: Delivery > 65%, Price > +2%. Fallback to >50% if none found.
     """
     if "DELIVERY_PCT" not in df.columns or df.empty:
         return pd.DataFrame()
 
-    candidates = df[
-        (df["MARKET_CAP_SEGMENT"].isin(["Mid", "Small"])) & 
-        (df["DELIVERY_PCT"] >= 65.0) & 
-        (df["PCT_CHANGE"] >= 2.0) &
-        (df["CLOSE"] >= 50.0) # Filter penny stocks
-    ].copy()
+    def _get_candidates(del_thresh: float) -> pd.DataFrame:
+        return df[
+            (df["MARKET_CAP_SEGMENT"].isin(["Mid", "Small"])) & 
+            (df["DELIVERY_PCT"] >= del_thresh) & 
+            (df["PCT_CHANGE"] >= 2.0) &
+            (df["CLOSE"] >= 50.0) 
+        ].copy()
 
-    # Sort by delivery % combined with price momentum
+    candidates = _get_candidates(65.0)
+    if candidates.empty:
+        candidates = _get_candidates(50.0)
+
     return candidates.sort_values(by=["DELIVERY_PCT", "PCT_CHANGE"], ascending=[False, False]).head(n)
 
 
 def extract_value_reversals(df: pd.DataFrame, n: int = 3) -> pd.DataFrame:
     """
     Finds Large cap stocks showing sudden institutional accumulation.
-    Criteria: Large Cap, Delivery > 70%, Price green today (but likely beaten down macro).
+    Criteria: Large Cap, Delivery > 70%, Price green today. Fallback to >55%.
     """
     if "DELIVERY_PCT" not in df.columns or df.empty:
         return pd.DataFrame()
 
-    candidates = df[
-        (df["MARKET_CAP_SEGMENT"] == "Large") & 
-        (df["DELIVERY_PCT"] >= 70.0) & 
-        (df["PCT_CHANGE"] > 0.0)
-    ].copy()
+    def _get_candidates(del_thresh: float) -> pd.DataFrame:
+        return df[
+            (df["MARKET_CAP_SEGMENT"] == "Large") & 
+            (df["DELIVERY_PCT"] >= del_thresh) & 
+            (df["PCT_CHANGE"] > 0.0)
+        ].copy()
+
+    candidates = _get_candidates(70.0)
+    if candidates.empty:
+        candidates = _get_candidates(55.0)
 
     return candidates.sort_values(by="DELIVERY_PCT", ascending=False).head(n)
