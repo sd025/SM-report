@@ -6,7 +6,7 @@ All API keys / passwords must come from environment variables.
 import os
 
 # ── Gemini Model ──────────────────────────────────────────────────────────────
-GEMINI_MODEL = "gemini-1.5-flash"
+GEMINI_MODEL = "gemini-2.0-flash"
 
 # ── Market Cap Segmentation (SEBI Definitions by rank) ───────────────────────
 LARGE_CAP_MAX_RANK = 100    # Top 100 by 6-month avg market cap = Large Cap
@@ -37,8 +37,8 @@ NSE_INDICES = {
     "Nifty Realty":       "NSE_INDEX|Nifty Realty",
     "Nifty FMCG":         "NSE_INDEX|Nifty FMCG",
     "Nifty Energy":       "NSE_INDEX|Nifty Energy",
-    "Nifty Midcap 150":   "NSE_INDEX|Nifty Midcap 150",
-    "Nifty Smallcap 250": "NSE_INDEX|Nifty Smallcap 250",
+    "Nifty Midcap 150":   "NSE_INDEX|NIFTY MIDCAP 150",
+    "Nifty Smallcap 250": "NSE_INDEX|NIFTY SMLCAP 250",
     "India VIX":          "NSE_INDEX|India VIX",
 }
 

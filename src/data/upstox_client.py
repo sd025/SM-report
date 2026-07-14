@@ -27,8 +27,8 @@ NSE_INDICES: Dict[str, str] = {
     "Nifty Realty":       "NSE_INDEX|Nifty Realty",
     "Nifty FMCG":         "NSE_INDEX|Nifty FMCG",
     "Nifty Energy":       "NSE_INDEX|Nifty Energy",
-    "Nifty Midcap 150":   "NSE_INDEX|Nifty Midcap 150",
-    "Nifty Smallcap 250": "NSE_INDEX|Nifty Smallcap 250",
+    "Nifty Midcap 150":   "NSE_INDEX|NIFTY MIDCAP 150",
+    "Nifty Smallcap 250": "NSE_INDEX|NIFTY SMLCAP 250",
     "India VIX":          "NSE_INDEX|India VIX",
 }
 
