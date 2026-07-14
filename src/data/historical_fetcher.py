@@ -65,16 +65,25 @@ def get_7d_trend_summary(df: pd.DataFrame) -> str:
     Generates a quick text summary of the 7-day trend (e.g., up 5%, volume expanding).
     Useful for feeding into the AI.
     """
-    if df is None or len(df) < 2:
+    if df is None or df.empty:
         return "Not enough data"
         
-    start_close = df['Close'].iloc[0]
-    end_close = df['Close'].iloc[-1]
+    # Drop rows where Close is NaN
+    df_clean = df.dropna(subset=['Close'])
+    if len(df_clean) < 2:
+        return "Not enough data"
+        
+    start_close = df_clean['Close'].iloc[0]
+    end_close = df_clean['Close'].iloc[-1]
+    
+    if pd.isna(start_close) or pd.isna(end_close) or start_close == 0:
+        return "Not enough data"
+        
     pct_change = ((end_close - start_close) / start_close) * 100
     
-    avg_vol = df['Volume'].mean()
-    last_vol = df['Volume'].iloc[-1]
-    vol_ratio = (last_vol / avg_vol) if avg_vol > 0 else 1.0
+    avg_vol = df_clean['Volume'].mean()
+    last_vol = df_clean['Volume'].iloc[-1]
+    vol_ratio = (last_vol / avg_vol) if (pd.notna(avg_vol) and avg_vol > 0) else 1.0
     
     trend_dir = "Up" if pct_change > 0 else "Down"
     return f"{trend_dir} {pct_change:.1f}% over 7 days. Today's volume is {vol_ratio:.1f}x the 7-day avg."

@@ -36,7 +36,7 @@ class GeminiAnalyst:
             return
 
         self.client = genai.Client(api_key=api_key)
-        self.model_name = "gemini-2.0-flash"
+        self.model_name = "gemini-1.5-flash"
         self.config = types.GenerateContentConfig(
             temperature=0.4,
             system_instruction=SYSTEM_INSTRUCTION
