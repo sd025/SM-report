@@ -36,7 +36,7 @@ class GeminiAnalyst:
             return
 
         self.client = genai.Client(api_key=api_key)
-        self.model_name = "gemini-2.5-flash"
+        self.model_name = "gemini-2.0-flash"
         self.config = types.GenerateContentConfig(
             temperature=0.4,
             system_instruction=SYSTEM_INSTRUCTION
@@ -71,7 +71,7 @@ class GeminiAnalyst:
             return response.text.strip()
         except Exception as exc:
             logger.error("Gemini macro summary failed: %s", exc)
-            return "Failed to generate market summary."
+            return f"Failed to generate market summary: {exc}"
 
     def get_analyst_desk_lesson(self, topic: str = "Volatility Contraction Pattern") -> str:
         """Generates a quick 3-sentence educational lesson on a financial concept."""
@@ -88,7 +88,7 @@ class GeminiAnalyst:
             return response.text.strip()
         except Exception as exc:
             logger.error("Analyst lesson failed: %s", exc)
-            return ""
+            return f"Failed to generate lesson: {exc}"
 
     def analyze_stock_group(self, group_name: str, stock_data: str) -> str:
         """Analyze a list of gainers/losers or anomalies."""
@@ -113,7 +113,7 @@ class GeminiAnalyst:
             return response.text.strip()
         except Exception as exc:
             logger.error("Gemini stock analysis failed: %s", exc)
-            return "Failed to analyze stocks."
+            return f"Failed to analyze stocks: {exc}"
 
     def build_watchlist(self, anomaly_data: str) -> str:
         """Pick the top 3-4 most interesting setups from anomalies to watch tomorrow."""
