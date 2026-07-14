@@ -1,4 +1,4 @@
-# Indian Market Daily Report (SM-Report)
+# Market Daily Report (SM-Report)
 
 A fully automated, free daily pipeline that delivers two brutally honest equity-analyst-style market reports to your Gmail every weekday.
 
