@@ -3,3 +3,4 @@ pandas>=2.1.0
 yfinance>=0.2.40
 google-generativeai>=0.8.0
 python-dotenv>=1.0.0
+feedparser>=6.0.10

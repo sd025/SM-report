@@ -39,21 +39,37 @@ def extract_top_movers(
         return filtered.sort_values(by="PCT_CHANGE", ascending=True).head(n)
 
 
-def detect_delivery_anomalies(df: pd.DataFrame) -> pd.DataFrame:
+def extract_momentum_breakouts(df: pd.DataFrame, n: int = 3) -> pd.DataFrame:
     """
-    Find stocks with unusually high delivery percentages AND significant price movement.
-    This is often a sign of institutional accumulation (if price up) or distribution (if down).
+    Finds Mid/Small cap stocks breaking out with huge institutional delivery.
+    Criteria: Delivery > 65%, Price > +2%.
     """
     if "DELIVERY_PCT" not in df.columns or df.empty:
         return pd.DataFrame()
 
-    # Filter out very small cap/micro cap noise
-    liquid = df[df["MARKET_CAP_SEGMENT"].isin(["Large", "Mid", "Small"])].copy()
-
-    # Criteria: High delivery AND moved > PCT_CHANGE_SIGNIFICANT (up or down)
-    anomalies = liquid[
-        (liquid["DELIVERY_PCT"] >= DELIVERY_HIGH_PCT) & 
-        (liquid["PCT_CHANGE"].abs() >= PCT_CHANGE_SIGNIFICANT)
+    candidates = df[
+        (df["MARKET_CAP_SEGMENT"].isin(["Mid", "Small"])) & 
+        (df["DELIVERY_PCT"] >= 65.0) & 
+        (df["PCT_CHANGE"] >= 2.0) &
+        (df["CLOSE"] >= 50.0) # Filter penny stocks
     ].copy()
 
-    return anomalies.sort_values(by="DELIVERY_PCT", ascending=False)
+    # Sort by delivery % combined with price momentum
+    return candidates.sort_values(by=["DELIVERY_PCT", "PCT_CHANGE"], ascending=[False, False]).head(n)
+
+
+def extract_value_reversals(df: pd.DataFrame, n: int = 3) -> pd.DataFrame:
+    """
+    Finds Large cap stocks showing sudden institutional accumulation.
+    Criteria: Large Cap, Delivery > 70%, Price green today (but likely beaten down macro).
+    """
+    if "DELIVERY_PCT" not in df.columns or df.empty:
+        return pd.DataFrame()
+
+    candidates = df[
+        (df["MARKET_CAP_SEGMENT"] == "Large") & 
+        (df["DELIVERY_PCT"] >= 70.0) & 
+        (df["PCT_CHANGE"] > 0.0)
+    ].copy()
+
+    return candidates.sort_values(by="DELIVERY_PCT", ascending=False).head(n)

@@ -1,0 +1,16 @@
+{
+  "PERSISTENT": { "shares": 10, "avg_price": 4810.0 },
+  "BEL": { "shares": 100, "avg_price": 390.60 },
+  "MARUTI": { "shares": 3, "avg_price": 12768.0 },
+  "KFINTECH": { "shares": 40, "avg_price": 892.0 },
+  "ICICIBANK": { "shares": 25, "avg_price": 1360.0 },
+  "DIXON": { "shares": 2, "avg_price": 12720.0 },
+  "ONGC": { "shares": 100, "avg_price": 231.56 },
+  "HAL": { "shares": 5, "avg_price": 3430.0 },
+  "CDSL": { "shares": 15, "avg_price": 1270.0 },
+  "AXISBANK": { "shares": 15, "avg_price": 1320.0 },
+  "LT": { "shares": 5, "avg_price": 3915.0 },
+  "WAAREEENER": { "shares": 5, "avg_price": 3131.0 },
+  "MAJESAUT": { "shares": 30, "avg_price": 317.0 },
+  "SULA": { "shares": 20, "avg_price": 216.0 }
+}

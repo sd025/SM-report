@@ -12,17 +12,15 @@ from config import GEMINI_MODEL
 logger = logging.getLogger(__name__)
 
 SYSTEM_INSTRUCTION = """
-You are a 17+ year veteran equity research analyst who has covered Indian markets through multiple bull and bear cycles.
-You have attended hundreds of management meetings and investor conferences.
-Your style is brutally honest, data-driven, and concise.
+You are a 17+ year veteran equity research analyst and Hedge Fund Manager who has covered Indian markets through multiple bull and bear cycles.
+Your audience is a busy professional who relies on you to manage their portfolio strategy.
+Your style is brutally honest, data-driven, and highly educational.
 
 Rules:
-- Never sugarcoat. If a stock looks bad, say so plainly (e.g. "falling knife", "value trap").
-- Always reference the exact data provided (delivery %, volume vs avg, 52W position, % change).
-- Flag institutional activity (high delivery) vs retail panic (low delivery/high volume) separately.
-- Keep each stock comment to 2-3 sentences maximum.
-- Do NOT say "this is not financial advice" or include generic disclaimers — the user knows this.
-- Think like a portfolio manager: what is the risk/reward here? Is it accumulation, distribution, or noise?
+- Never sugarcoat. If FIIs are dumping, say the market is weak.
+- Connect the dots between global macro (news) and Indian liquidity (FII/DII data).
+- When recommending a trade, always provide the exact setup (e.g. VCP Breakout) and an explicit Invalidation/Stop-Loss level.
+- Think like a portfolio manager: prioritize risk management over hype.
 """
 
 
@@ -43,21 +41,24 @@ class GeminiAnalyst:
         )
         self.enabled = True
 
-    def get_market_summary(self, index_data: str, news_data: str) -> str:
-        """Generate a short 3-4 sentence macro summary of the day/morning."""
+    def get_market_summary(self, index_data: str, news_data: str, fii_dii: str = "") -> str:
+        """Generate a macro summary combining price action, liquidity, and global news."""
         if not self.enabled:
             return "AI narrative disabled (no API key)."
 
         prompt = f"""
-        Provide a very brief (3-4 sentences max) macro summary of the market based on this data:
+        Provide a brutally honest macro summary of the market today based on this data:
         
         Indices:
         {index_data}
         
-        Headlines:
+        FII/DII Liquidity (Net Cash Rs Cr):
+        {fii_dii}
+        
+        Global Headlines / Crises:
         {news_data}
         
-        What is the overall tone/trend? What should an investor be cautious about today/tomorrow?
+        What is the overall trend? Are institutions buying or selling? How do the global headlines affect Indian markets today? (Keep it to 4-5 sentences max).
         """
         try:
             response = self.model.generate_content(prompt)
@@ -65,6 +66,17 @@ class GeminiAnalyst:
         except Exception as exc:
             logger.error("Gemini macro summary failed: %s", exc)
             return "Failed to generate market summary."
+
+    def get_analyst_desk_lesson(self, topic: str = "Volatility Contraction Pattern") -> str:
+        """Generates a quick 3-sentence educational lesson on a financial concept."""
+        if not self.enabled:
+            return ""
+            
+        prompt = f"Explain the trading concept of '{topic}' in 3 simple sentences for someone who is not in finance, but wants to understand how hedge funds use it to make money."
+        try:
+            return self.model.generate_content(prompt).text.strip()
+        except:
+            return ""
 
     def analyze_stock_group(self, group_name: str, stock_data: str) -> str:
         """Analyze a list of gainers/losers or anomalies."""
