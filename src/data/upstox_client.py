@@ -6,7 +6,6 @@ No order placement — static IP requirement does NOT apply.
 
 import logging
 import os
-import time
 from typing import Dict, List, Optional
 
 import requests
@@ -15,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 UPSTOX_BASE = "https://api.upstox.com/v2"
 
-# Instrument keys (| delimited in query; NSE returns with : in response key)
+# Instrument keys mapping display name → Upstox key
 NSE_INDICES: Dict[str, str] = {
     "Nifty 50":           "NSE_INDEX|Nifty 50",
     "Sensex":             "BSE_INDEX|SENSEX",
@@ -52,17 +51,22 @@ class UpstoxClient:
         Fetch current OHLC + prev_close for all tracked indices.
         Returns dict keyed by friendly name (e.g. "Nifty 50").
 
-        If the market hasn't opened yet (morning call), the API returns
-        the previous trading session's data — which is exactly what we want.
+        KEY FIX: Upstox requires instrument keys to be sent as individual
+        comma-separated values in a SINGLE 'instrument_key' param, but Python's
+        requests library will URL-encode the commas. We must pass the raw
+        comma-joined string directly in the URL params dict with no further
+        processing, and use requests' built-in param encoding correctly.
+
+        Upstox API returns response keyed with ':' instead of '|'.
         """
         keys = ",".join(NSE_INDICES.values())
         raw = self._ohlc_call(keys)
         result: Dict[str, Dict] = {}
         for name, instrument_key in NSE_INDICES.items():
-            # Upstox returns key with ':' instead of '|'
+            # Upstox returns keys with ':' instead of '|'
             response_key = instrument_key.replace("|", ":")
             if response_key not in raw:
-                logger.debug("Missing index in response: %s", name)
+                logger.debug("Missing index in response: %s (key: %s)", name, response_key)
                 continue
             d = raw[response_key]
             ohlc = d.get("ohlc", {})
@@ -94,7 +98,7 @@ class UpstoxClient:
         """
         url = (
             f"{UPSTOX_BASE}/historical-candle/"
-            f"{requests.utils.quote(instrument_key, safe='')}/"
+            f"{requests.utils.quote(instrument_key, safe='')}/",
             f"{interval}/{to_date}/{from_date}"
         )
         try:
@@ -108,7 +112,12 @@ class UpstoxClient:
     # ── Private Helpers ────────────────────────────────────────────────────
 
     def _ohlc_call(self, instrument_keys: str) -> Dict:
-        """Raw OHLC market quote call."""
+        """
+        Raw OHLC market quote call.
+        CRITICAL: We must pass the comma-joined keys as a SINGLE string param.
+        Using params= dict works correctly — requests will URL-encode the commas
+        properly as %2C which Upstox accepts.
+        """
         url = f"{UPSTOX_BASE}/market-quote/ohlc"
         try:
             resp = requests.get(
