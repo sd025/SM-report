@@ -11,7 +11,7 @@ import requests
 from config import HEALTHCHECKS_BASE
 from src.data.upstox_client import UpstoxClient
 from src.data.global_markets import get_overnight_markets
-from src.data.news_fetcher import fetch_top_headlines
+from src.data.news_fetcher import get_market_news
 from src.analysis.gemini_analyst import GeminiAnalyst
 from src.reports.email_sender import send_html_email
 
@@ -82,7 +82,7 @@ def build_morning_brief() -> str:
     upstox = UpstoxClient()
     indian_indices = upstox.get_index_quotes()
     global_markets = get_overnight_markets()
-    news = fetch_top_headlines()
+    news = get_market_news()
     
     # 2. AI Summary
     idx_str = "\n".join([f"{k}: {v['pct_change']}%" for k, v in indian_indices.items() if v])
