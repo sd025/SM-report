@@ -1,0 +1,7 @@
+# This directory holds SEBI/NSE index constituent CSVs.
+# These files are auto-downloaded by scripts/download_constituents.py
+# and refreshed by the GitHub Actions workflow on the 1st and 15th of each month.
+# Files committed here after the first run:
+#   nifty100.csv          — Large cap (top 100 by 6-month avg market cap)
+#   nifty_midcap150.csv   — Mid cap (rank 101–250)
+#   nifty_smallcap250.csv — Small cap (rank 251–500)
